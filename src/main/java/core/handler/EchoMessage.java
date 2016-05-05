@@ -1,6 +1,7 @@
 package core.handler;
 
-import com.jjshome.esf.core.remoting.DistributionSupport;
+
+import core.DistributionSupport;
 
 /**
  * echo msg
