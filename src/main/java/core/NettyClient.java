@@ -85,7 +85,7 @@ public class NettyClient implements Runnable {
 
 	public static void main(String[] args) {
 		NettyRemotingClient instanceOne = new NettyRemotingClient("127.0.0.1", 9999);
-		NettyClient.getInstance().addRemotingClient("node1", instanceOne);
+		NettyClient.getInstance().addRemotingClient("127.0.0.1", instanceOne);
 		try {
 			new Thread(instanceOne).start();
 		} catch (Exception e) {
