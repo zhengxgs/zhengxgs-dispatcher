@@ -1,7 +1,7 @@
 # task dispatcher
 
-CLIENT:
-
+##CLIENT:
+```java
 NettyRemotingClient instanceOne = new NettyRemotingClient("127.0.0.1", 9999);
 NettyClient.getInstance().addRemotingClient("127.0.0.1", instanceOne);
 try {
@@ -10,15 +10,16 @@ try {
 	e.printStackTrace();
 }
 new Thread(NettyClient.getInstance()).start();
-
+```
 ----------------------------------------
 
-SERVER:
-
+##SERVER:
+```java
 new Thread(NettyServer.getInstance()).start();
 System.out.println("server start....");
 
-# put task to queue
+// put task to queue
 CalculateWork calculateWork = new CalculateWork();
 calculateWork.setNodeName("127.0.0.1");
 NettyServer.getInstance().addWork(calculateWork);
+```
