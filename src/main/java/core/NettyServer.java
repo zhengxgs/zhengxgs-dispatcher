@@ -1,6 +1,7 @@
 package core;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import core.factory.NamedThreadFactory;
 import core.handler.Event;
 import core.handler.EventType;
 import core.task.CalculateWork;
+import core.task.FixmeWork;
 import core.utils.FragmentUtil;
 import core.utils.LoggerUtil;
 import core.utils.TransportUtil;
@@ -279,10 +281,15 @@ public class NettyServer extends Thread implements Serializable {
 		calculateWork.setNodeName("127.0.0.1");
 		NettyServer.getInstance().addWork(calculateWork);
 
-		/*for (int i = 0; i < 10; i++) {
-			Thread.sleep(3000);
-			NettyServer.addWork(new CalculateWork());
-		}*/
+		List<Integer> ids = new ArrayList<>();
+		for (int i = 0; i < 400000; i++) {
+			ids.add(i);
+		}
+		FixmeWork fixmeWork = new FixmeWork(ids);
+		fixmeWork.setNodeName("127.0.0.1");
+		fixmeWork.setIsSegment(true);
+		NettyServer.getInstance().addWork(fixmeWork);
+
 		// System.out.println(TimeUnit.SECONDS.convert(240000, TimeUnit.MILLISECONDS));
 		// System.out.println(TimeUnit.MILLISECONDS.convert(7200, TimeUnit.SECONDS));
 

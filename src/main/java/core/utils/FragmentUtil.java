@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import core.DistributionSupport;
+import core.task.FixmeWork;
 
 /**
  * Created by zhengxgs on 2016/4/29.
@@ -13,12 +14,31 @@ public class FragmentUtil {
 
 	public static final boolean isSupportFragment(DistributionSupport work) {
 		boolean support = false;
+		if (work instanceof FixmeWork) {
+			support = true;
+		}
 		return support;
 	}
 
-	public static final List<DistributionSupport> getFragment(DistributionSupport work, int nodeSize) {
-		System.out.println("暂不支持的分片任务");
-		return null;
+	public static final List<DistributionSupport> getFragment(DistributionSupport work, int nodeSize) throws Exception {
+		if (work instanceof FixmeWork) {
+			return getFragmentByFixmeWork((FixmeWork) work, nodeSize);
+		} else {
+			throw new Exception("暂不支持的分片任务");
+		}
+	}
+
+	private static final List<DistributionSupport> getFragmentByFixmeWork(FixmeWork work, int nodeSize) {
+		List<DistributionSupport> works = new ArrayList<>(nodeSize);
+		List<List<Integer>> idsSegment = fragment(work.getIds(), nodeSize);
+		for (int i = 0; i < nodeSize; i++) {
+			List<Integer> seg = idsSegment.get(i);
+			FixmeWork fixmeWork = new FixmeWork(seg);
+			fixmeWork.setIsSegment(false);
+			fixmeWork.setNodeName(work.getNodeName());
+			works.add(fixmeWork);
+		}
+		return works;
 	}
 
 	/**
