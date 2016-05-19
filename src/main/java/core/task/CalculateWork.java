@@ -1,11 +1,10 @@
 package core.task;
 
+import java.util.Random;
+
 import core.DistributionSupport;
 import core.handler.Event;
 import core.handler.EventType;
-
-import java.util.Random;
-
 
 /**
  * Created by zhengxgs on 2016/4/28.
@@ -22,6 +21,11 @@ public class CalculateWork extends DistributionSupport {
 		int k = i + j;
 		String message = "计算结果: " + k;
 		System.out.println(Thread.currentThread() + ":" + message);
-		eventToServer(new Event(EventType.W_ECHO_MESSAGE, message, this));
+		eventToServer(new Event(EventType.AB_ECHO_MESSAGE, message, this));
+	}
+
+	@Override
+	protected void competeWorkCallBack(int workStateType) {
+		// clean op..
 	}
 }

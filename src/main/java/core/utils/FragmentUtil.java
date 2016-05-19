@@ -1,16 +1,20 @@
 package core.utils;
 
-import core.DistributionSupport;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import core.DistributionSupport;
 
 /**
  * Created by zhengxgs on 2016/4/29.
  */
 public class FragmentUtil {
 
+	public static final boolean isSupportFragment(DistributionSupport work) {
+		boolean support = false;
+		return support;
+	}
 
 	public static final List<DistributionSupport> getFragment(DistributionSupport work, int nodeSize) {
 		System.out.println("暂不支持的分片任务");

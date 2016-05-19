@@ -5,5 +5,5 @@ package core.handler;
  */
 public interface EventHandler {
 
-    public boolean handleEvent(Event event);
+	public boolean handleEvent(Event event);
 }

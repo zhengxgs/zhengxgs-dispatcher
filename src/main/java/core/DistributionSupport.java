@@ -3,17 +3,21 @@ package core;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import core.handler.Event;
-import core.handler.EventHandler;
 import core.handler.EventType;
 import core.utils.TransportUtil;
 
 /**
+ * 任务抽象类（如需任务拆分，需要到FragmentUtil中添加拆分支持）
  * Created by zhengxgs on 2016/4/28.
  */
-public abstract class DistributionSupport implements EventHandler, Runnable, Serializable {
+public abstract class DistributionSupport implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
+	private Logger logger = LoggerFactory.getLogger("es.log");
 
 	// default is true
 	private boolean isSegment = false;
@@ -50,20 +54,14 @@ public abstract class DistributionSupport implements EventHandler, Runnable, Ser
 		this.nodeName = nodeName;
 	}
 
-	@Override
-	public boolean handleEvent(Event event) {
-		return true;
-	}
-
 	/**
 	 * 发送事件到服务器
 	 * @param event
 	 * @return
 	 */
 	protected boolean eventToServer(Event event) {
-		boolean result = false;
-		TransportUtil.toServer(event);
-		return result;
+		logger.info("客户端发向{}, uuid:{}, 发送事件:{}", getNodeName(), getUuid(), event);
+		return TransportUtil.toServer(event);
 	}
 
 	/**
@@ -76,11 +74,18 @@ public abstract class DistributionSupport implements EventHandler, Runnable, Ser
 	protected boolean competeWork(int workStateType) {
 		boolean result = false;
 		try {
-			eventToServer(new Event(EventType.W_WORK_COMPLETE, workStateType, this));
+			competeWorkCallBack(workStateType);
+			result = eventToServer(new Event(EventType.B_COMPLETE_WORK, workStateType, this));
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("客户端发送服务端异常", e);
 		}
 		return result;
 	}
+
+	/**
+	 * 任务返回后，执行一些操作
+	 * @param workStateType 执行状态
+	 */
+	protected abstract void competeWorkCallBack(int workStateType);
 
 }

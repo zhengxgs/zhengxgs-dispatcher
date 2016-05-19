@@ -1,6 +1,5 @@
 package core;
 
-
 import core.handler.Event;
 
 /**
@@ -8,7 +7,7 @@ import core.handler.Event;
  */
 public class DistributionSupportProxy extends DistributionSupport {
 
-	private static final long serialVersionUID = 1057021414094498877L;
+	private static final long serialVersionUID = 1L;
 
 	DistributionSupport distributionSupport;
 
@@ -35,6 +34,11 @@ public class DistributionSupportProxy extends DistributionSupport {
 	}
 
 	@Override
+	protected void competeWorkCallBack(int workStateType) {
+		distributionSupport.competeWorkCallBack(workStateType);
+	}
+
+	@Override
 	protected boolean eventToServer(Event event) {
 		return distributionSupport.eventToServer(event);
 	}
@@ -42,10 +46,5 @@ public class DistributionSupportProxy extends DistributionSupport {
 	@Override
 	public String getUuid() {
 		return distributionSupport.getUuid();
-	}
-
-	@Override
-	public boolean handleEvent(Event event) {
-		return distributionSupport.handleEvent(event);
 	}
 }

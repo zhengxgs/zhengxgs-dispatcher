@@ -1,7 +1,9 @@
 package core.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import core.DistributionSupport;
+import core.utils.LoggerUtil;
 
 /**
  * echo msg
@@ -9,15 +11,16 @@ import core.DistributionSupport;
  */
 public class EchoMessage implements EventHandler {
 
-	public int eventType = EventType.S_ECHO_MESSAGE;
+	public int eventType = EventType.AB_ECHO_MESSAGE;
+	private Logger logger = LoggerFactory.getLogger("es.log");
 
 	@Override
 	public boolean handleEvent(Event event) {
 		boolean result = false;
-		System.out.println(event.getParas().toString());
-		if (event.getSource() instanceof DistributionSupport) {
-			// System.out.println((((DistributionSupport) event.getSource()).getUuid()) + " 完成任务了");
-		}
+		LoggerUtil.info(logger, event.getParas().toString());
+		// if (event.getSource() instanceof DistributionSupport) {
+		// System.out.println((((DistributionSupport) event.getSource()).getUuid()) + " 完成任务了");
+		// }
 		result = true;
 		return result;
 	}
