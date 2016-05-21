@@ -3,6 +3,7 @@ package core;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,13 +39,14 @@ public class NettyRemotingClient extends AbstractRemotingClient {
 	public NettyRemotingClient(String host, int port) {
 		this.host = host;
 		this.port = port;
-		executorService = new ThreadPoolExecutor(5, 10, 10 * 60 * 60, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1024),
+		executorService = new ThreadPoolExecutor(10, 10, 10 * 60 * 60, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(128),
 				new NamedThreadFactory("processRequestCommandThread"), new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 
 	public Channel channel;
 	public EventLoopGroup group = new NioEventLoopGroup();
 	public Bootstrap bootstrap = getBootstrap();
+	public AtomicBoolean isReConnectRunning = new AtomicBoolean(false);
 
 	public Bootstrap getBootstrap() {
 		Bootstrap b = new Bootstrap();
@@ -98,7 +100,7 @@ public class NettyRemotingClient extends AbstractRemotingClient {
 		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 			super.channelInactive(ctx);
 			LoggerUtil.warn(logger, "链接断开重连...");
-			run();
+			isReConnectRunning.compareAndSet(false, true);
 		}
 
 		@Override
@@ -107,17 +109,18 @@ public class NettyRemotingClient extends AbstractRemotingClient {
 		}
 	}
 
-	public Channel doConnect() throws Exception {
-		channel = bootstrap.connect(host, port).sync().channel();
-		return channel;
+	public void retryConnect() {
+		if (isReConnectRunning.compareAndSet(true, false)) {
+			connect();
+			isReConnectRunning.compareAndSet(false, true);
+		}
 	}
 
-	@Override
-	public void run() {
+	public void connect() {
 		boolean connectSuccess = false;
 		while (!connectSuccess) {
 			try {
-				doConnect();
+				channel = bootstrap.connect(host, port).sync().channel();
 				connectSuccess = true;
 			} catch (Exception e) {
 				LoggerUtil.warn(logger, "IP:{} 链接服务器失败，等待5秒后重试...", host);
@@ -129,6 +132,11 @@ public class NettyRemotingClient extends AbstractRemotingClient {
 			}
 		}
 		LoggerUtil.info(logger, "客户端链接IP:{} 完成...", host);
+	}
+
+	@Override
+	public void run() {
+		connect();
 	}
 
 	public Channel getChannel() {

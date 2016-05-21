@@ -1,15 +1,14 @@
 package core;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.Map;
+import java.util.concurrent.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import core.factory.NamedThreadFactory;
 import core.utils.LoggerUtil;
+import io.netty.channel.Channel;
 
 /**
  * Created by zhengxgs on 2016/4/28.
@@ -23,10 +22,42 @@ public class NettyClient implements Runnable {
 	private final ThreadPoolExecutor threadPool;
 	private final ConcurrentHashMap<String, NettyRemotingClient> remotingClients = new ConcurrentHashMap<>();
 	private final LinkedBlockingQueue<DistributionSupport> workPool = new LinkedBlockingQueue<>();
+	private final ScheduledExecutorService channelConnectExecutorService;
+	private final ThreadPoolExecutor channelManageThreadPool;
+
+	public void channelManageStart() {
+		channelConnectExecutorService.scheduleWithFixedDelay(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if (remotingClients.size() > 0) {
+						for (final Map.Entry<String, NettyRemotingClient> entry : remotingClients.entrySet()) {
+							Channel channel = entry.getValue().getChannel();
+							if (channel != null && !channel.isActive() && entry.getValue().isReConnectRunning.get()) {
+								channelManageThreadPool.execute(new Runnable() {
+									@Override
+									public void run() {
+										entry.getValue().retryConnect();
+									}
+								});
+							}
+						}
+					}
+				} catch (Exception e) {
+					LoggerUtil.error(logger, "检查超时任务异常", e);
+				}
+			}
+		}, 10, 10, TimeUnit.SECONDS);
+	}
 
 	private NettyClient() {
 		running = true;
-		threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(32, new NamedThreadFactory("TaskExecutor"));
+		threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(16, new NamedThreadFactory("TaskExecutor"));
+		/** core 3, max 3, 剩余全进队列 */
+		channelManageThreadPool = new ThreadPoolExecutor(3, 3, 10 * 1000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(),
+				new NamedThreadFactory("channelManageExecutor"));
+		channelManageThreadPool.allowCoreThreadTimeOut(true);
+		channelConnectExecutorService = Executors.newScheduledThreadPool(1, new NamedThreadFactory("channelConnectExecutor"));
 	}
 
 	public static NettyClient getInstance() {
@@ -45,6 +76,7 @@ public class NettyClient implements Runnable {
 
 	@Override
 	public void run() {
+		channelManageStart();
 		processAll();
 	}
 

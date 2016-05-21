@@ -277,18 +277,18 @@ public class NettyServer extends Thread implements Serializable {
 		new Thread(NettyServer.getInstance()).start();
 		System.out.println("服务器端程序启动....................完成");
 
-		CalculateWork calculateWork = new CalculateWork();
-		calculateWork.setNodeName("127.0.0.1");
-		NettyServer.getInstance().addWork(calculateWork);
-
-		List<Integer> ids = new ArrayList<>();
-		for (int i = 0; i < 400000; i++) {
-			ids.add(i);
-		}
-		FixmeWork fixmeWork = new FixmeWork(ids);
-		fixmeWork.setNodeName("127.0.0.1");
-		fixmeWork.setIsSegment(true);
-		NettyServer.getInstance().addWork(fixmeWork);
+//		CalculateWork calculateWork = new CalculateWork();
+//		calculateWork.setNodeName("127.0.0.1");
+//		NettyServer.getInstance().addWork(calculateWork);
+//
+//		List<Integer> ids = new ArrayList<>();
+//		for (int i = 0; i < 400000; i++) {
+//			ids.add(i);
+//		}
+//		FixmeWork fixmeWork = new FixmeWork(ids);
+//		fixmeWork.setNodeName("127.0.0.1");
+//		fixmeWork.setIsSegment(true);
+//		NettyServer.getInstance().addWork(fixmeWork);
 
 		// System.out.println(TimeUnit.SECONDS.convert(240000, TimeUnit.MILLISECONDS));
 		// System.out.println(TimeUnit.MILLISECONDS.convert(7200, TimeUnit.SECONDS));
