@@ -44,7 +44,7 @@ public class NettyClient implements Runnable {
 						}
 					}
 				} catch (Exception e) {
-					LoggerUtil.error(logger, "检查超时任务异常", e);
+					LoggerUtil.error(logger, "服务端链接检查重连异常", e);
 				}
 			}
 		}, 10, 10, TimeUnit.SECONDS);
